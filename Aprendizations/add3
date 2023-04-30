@@ -1,3 +1,12 @@
+
+
+Pretende-se desenvolver uma função que retorne a soma dos seus 3 argumentos. O protótipo da função em C seria
+
+    int add3(int x, int y, int z);
+
+Escreva a função em assembly RISC-V.
+
+
 add3:
 
 addi sp, sp, -4 #cria espaço na pilha para armazenar o valor
