@@ -24,6 +24,7 @@ j end           #salta para a label 'end' para finalizar a execução da funçã
 #se o bit menos significativo for 0, o número é par
 even: 
 li a0, 1        #carrega o valor 1 no registrador a0 para indicar que o número é par
+ret
 
 end:
 lw ra, 0(sp)    #restaura o valor de ra
