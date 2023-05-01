@@ -1,0 +1,30 @@
+
+
+No código ASCII, os caracteres '0' a '9' são representados pelos números 48 a 57.
+
+Neste problema, pretende-se converter de algarismos ASCII para os números inteiros correspondentes. Escreva, em Assembly RISC-V, uma função int digit_to_int(char) que faça essa conversão. No caso do carácter não ser um dígito a função deve retornar o valor -1.
+
+Por exemplo, digit_to_int('3') deve retornar o inteiro 3, enquanto que digit_to_int('a') deve retornar -1.
+
+digit_to_int:
+
+
+    addi sp, sp, -4      # reserva espaço na pilha para salvar o registrador ra
+    sw ra, 0(sp)         # salva o registrador ra na pilha
+
+    lb t0, 0(a0)        # carrega o byte em a0 na variável temporária t0
+    li t1, 48            # carrega o valor 48 na variável temporária t1
+    li t2, 57            # carrega o valor 57 na variável temporária t2
+    blt t0, t1, not_digit # verifica se o byte é menor que 48 (o caractere '0' em ASCII)
+    bgt t0, t2, not_digit # verifica se o byte é maior que 57 (o caractere '9' em ASCII)
+    sub t0, t2, t1       # subtrai 48 do valor do byte para obter o número inteiro correspondente
+    j exit               # pula para o rótulo exit
+
+not_digit:
+    li a0, -1            # define o valor -1 para indicar que o caractere não é um dígito
+
+exit:
+    lw ra, 0(sp)         # restaura o registrador ra
+    addi sp, sp, 4       # libera o espaço na pilha
+    mv a0, t0            # move o resultado para o registrador de retorno
+    ret  
