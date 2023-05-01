@@ -1,3 +1,5 @@
+XXXXXXXXXXXXXXXXXXXXX -------------- POR ACABAR -------------- XXXXXXXXXXXXXXXXXXXXX
+
 upperchar:
 	addi sp, sp, -4     # reserva espaço na pilha para salvar o registrador ra
 	sw ra, 0(sp)        # salva o registrador ra na pilha
