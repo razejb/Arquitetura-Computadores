@@ -1,10 +1,12 @@
-
+XXXXXXXXXXXXXXXXXXXXX -------------- POR ACABAR -------------- XXXXXXXXXXXXXXXXXXXXX
 
 No código ASCII, os caracteres '0' a '9' são representados pelos números 48 a 57.
 
 Neste problema, pretende-se converter de algarismos ASCII para os números inteiros correspondentes. Escreva, em Assembly RISC-V, uma função int digit_to_int(char) que faça essa conversão. No caso do carácter não ser um dígito a função deve retornar o valor -1.
 
 Por exemplo, digit_to_int('3') deve retornar o inteiro 3, enquanto que digit_to_int('a') deve retornar -1.
+
+
 
 digit_to_int:
 
