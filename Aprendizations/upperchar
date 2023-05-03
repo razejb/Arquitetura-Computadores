@@ -28,7 +28,7 @@ exit:
 	lw ra, 0(sp)        	# restaura o registrador ra
 	addi sp, sp, 4      	# libera o espaço na pilha
 	ret                 	# retorna para o chamador
-	               	    	# retorna para o chamador
+	               	    	
 	
 	
 	
