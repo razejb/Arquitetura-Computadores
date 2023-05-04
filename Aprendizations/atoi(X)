@@ -1,0 +1,65 @@
+XXXXXXXXXXXXXXXXXXXXX----------- POR ACABAR -----------XXXXXXXXXXXXXXXXXXXXX
+A biblioteca standard da linguagem C inclui a função atoi para converter uma string de algarismos num número inteiro. Se a string não contiver digitos, a função retorna 0.
+
+O protótipo da função é o seguinte:
+
+int atoi(char a[]);
+~
+
+Por exemplo,
+
+    atoi("123") retorna o número inteiro 123.
+    atoi("hello") retorna 0.
+    atoi("123hello") retorna o número 123 correspondente ao início da string.
+
+Escreva esta função em assembly RISC-V, sem usar a instrução mul. Assuma que os números nunca são negativos, pelo que não precisa de tratar este caso.
+
+Em C ficaria:
+
+void atoi(char a[])
+{
+  for(int i = 0; a[i] != '\0'; i++)
+  {
+    if((a[i] >= 48) && (a[i] <= 57)) 
+    printf("%c", a[i]) ;
+  }
+ 
+}
+
+
+Em risc-v ficaria:
+
+atoi:
+    addi sp, sp, -8     # reserva espaço na pilha para salvar os registradores ra e s0
+    sw ra, 4(sp)
+    sw s0, 0(sp)
+
+    li t0, 0            # inicializa o valor de retorno com zero
+    li t1, 48           # valor ascii do caractere '0'
+    li t2, 57           # valor ascii do caractere '9'
+
+    loop:
+        lbu t3, 0(a0)   # carrega o próximo caractere da string em t3 sem sinal
+        beqz t3, exit   # se o caractere for nulo, sai do loop
+        
+        blt t3, t1, not_digit   # se o caractere não for um dígito, vai para not_digit
+        bgt t3, t2, not_digit
+
+        sub t3, t3, t1   # converte o valor ascii do dígito para um valor numérico
+        slli t0, t0, 1   # multiplica o valor atual por 2 (equivale a multiplicar por 10 e somar o dobro)
+        slli t3, t3, 2   # multiplica o valor do dígito por 4 (equivale a multiplicar por 10 e somar mais 3x)
+        add t0, t0, t3   # adiciona o valor do dígito ao valor acumulado
+        addi a0, a0, 1   # incrementa o ponteiro da string
+
+        j loop           # volta para o início do loop
+
+    not_digit:
+        li t0, 0        # se o caractere não for um dígito, retorna zero
+        j exit
+
+    exit:
+        lw ra, 4(sp)     # restaura o registrador ra
+        lw s0, 0(sp)     # restaura o registrador s0
+        addi sp, sp, 8    # libera espaço na pilha
+        sw t0, 0(a1)     # salva o valor acumulado no endereço apontado por result
+        ret              # retorna o valor acumulado
