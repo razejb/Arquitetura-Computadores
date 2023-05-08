@@ -16,174 +16,82 @@ Escreva esta função em assembly RISC-V, sem usar a instrução mul. Assuma que
 
 Em C ficaria:
 
-void atoi(char a[])
+int atoi(char a[])
 {
-  for(int i = 0; a[i] != '\0'; i++)
+  int i = 0; 
+  int j = 0; 
+  for(; a[i] != '\0'; i++)
   {
+
     if((a[i] >= 48) && (a[i] <= 57)) 
-    printf("%c", a[i]) ;
+      {
+        j = j * 10 + a[i] - '0';
+     
+      }
   }
- 
+  return j;
+    
+
 }
 
 
 Em risc-v ficaria:
 
-atoi:
-    addi sp, sp, -8     # reserva espaço na pilha para salvar os registradores ra e s0
-    sw ra, 4(sp)
-    sw s0, 0(sp)
-
-    li t0, 0            # inicializa o valor de retorno com zero
-    li t1, 48           # valor ascii do caractere '0'
-    li t2, 57           # valor ascii do caractere '9'
-
-    loop:
-        lbu t3, 0(a0)   # carrega o próximo caractere da string em t3 sem sinal
-        beqz t3, exit   # se o caractere for nulo, sai do loop
-        
-        blt t3, t1, not_digit   # se o caractere não for um dígito, vai para not_digit
-        bgt t3, t2, not_digit
-
-        sub t3, t3, t1   # converte o valor ascii do dígito para um valor numérico
-        slli t0, t0, 1   # multiplica o valor atual por 2 (equivale a multiplicar por 10 e somar o dobro)
-        slli t3, t3, 2   # multiplica o valor do dígito por 4 (equivale a multiplicar por 10 e somar mais 3x)
-        add t0, t0, t3   # adiciona o valor do dígito ao valor acumulado
-        addi a0, a0, 1   # incrementa o ponteiro da string
-
-        j loop           # volta para o início do loop
-
-    not_digit:
-        li t0, 0        # se o caractere não for um dígito, retorna zero
-        j exit
-
-    exit:
-        lw ra, 4(sp)     # restaura o registrador ra
-        lw s0, 0(sp)     # restaura o registrador s0
-        addi sp, sp, 8    # libera espaço na pilha
-        sw t0, 0(a1)     # salva o valor acumulado no endereço apontado por result
-        ret              # retorna o valor acumulado
-
-
-
-mull:
-    li t0, 0
-
-    A2:    
-    beqz a1, R2
-    add t0, t0, a0
-    addi a1, a1, -1
-    bnez a1, A2
-
-    R2: 
-    mv a0, t0
-    ret
-
-atoi:
-    addi sp, sp, -28
-    sw ra, 0(sp)
-    sw s6, 4(sp)
-    sw s0, 8(sp)
-    sw s1, 12(sp)
-    sw s3, 16(sp)
-    sw s5, 20(sp)
-    sw s2, 24(sp)
-
-    li s0, 48
-    li s1, 57
-    li s3, 0
-    li s5, 0
-    mv s6, a0
-
-    A:  
-    lbu s2, 0(s6)
-    blt s2, s0, R
-    bgt s2, s1, R
-
-    addi s2, s2, -48
-
-    beqz s3, Bit
-    mv a0, s5
-    li a1, 10
-    jal mull
-    mv s5, a0
-
-    Bit:  
-    add s5, s5, s2 
-    addi s3, s3, 1
-    addi s6, s6, 1
-    j A
-
-    R: 
-    mv a0, s5
-    lw s2, 24(sp)
-    lw ra, 0(sp)
-    lw s6, 4(sp)
-    lw s0, 8(sp)
-    lw s1, 12(sp)
-    lw s3, 16(sp)
-    lw s5, 20(sp)
-    addi sp, sp, 28
-    ret
-
-mull:
+multi:
 li t0, 0 # Inicia o registrador t0 com 0
 
-A2:    
-beqz a1, R2   # Se a1 == 0, pula para R2
-add t0, t0, a0    # t0 = t0 + a0
-addi a1, a1, -1   # a1 = a1 - 1
-bnez a1, A2   # Se a1 != 0, pula para A2
+Adiciona2:
+beqz a1, Retorna2 # Se a1 == 0, pula para Retorna2
+add t0, t0, a0 # t0 = t0 + a0
 
-R2: 
-mv a0, t0    # Move o valor de t0 para a0
-ret          # Retorna para a função chamadora
+addi a1, a1, -1 # a1 = a1 - 1
+bnez a1, Adiciona2 # Se a1 != 0, pula para Adiciona2
+
+
+Retorna2:
+mv a0, t0 # Move o valor de t0 para a0
+ret # Retorna para a função chamadora
 
 atoi:
-addi sp, sp, -28 # Aloca espaço na pilha para guardar os registradores
+addi sp, sp, -12 # Aloca espaço na pilha para guardar os registradores
 sw ra, 0(sp) # Salva o registrador ra na pilha
-sw s6, 4(sp) # Salva o registrador s6 na pilha
-sw s0, 8(sp) # Salva o registrador s0 na pilha
-sw s1, 12(sp) # Salva o registrador s1 na pilha
-sw s3, 16(sp) # Salva o registrador s3 na pilha
-sw s5, 20(sp) # Salva o registrador s5 na pilha
-sw s2, 24(sp) # Salva o registrador s2 na pilha
+sw s0, 4(sp) # Salva o registrador s0 na pilha
+sw s1, 8(sp) # Salva o registrador s1 na pilha
 
-li s0, 48      # Caractere '0' na tabela ASCII
-li s1, 57      # Caractere '9' na tabela ASCII
-li s3, 0       # Inicializa a contagem de caracteres lidos com 0
-li s5, 0       # Inicializa o valor do número com 0
-mv s6, a0      # Move o ponteiro para a string para s6
 
-A:  
-lbu s2, 0(s6)  # Lê o próximo caractere da string
-blt s2, s0, R  # Se o caractere lido for menor que '0', pula para R
-bgt s2, s1, R  # Se o caractere lido for maior que '9', pula para R
+li s0, 48 # Caractere '0' na tabela ASCII
+li s1, 57 # Caractere '9' na tabela ASCII
+li s3, 0 # Inicializa a contagem de caracteres lidos com 0
+li s5, 0 # Inicializa o valor do número com 0
+mv s6, a0 # Move o ponteiro para a string para s6
 
-addi s2, s2, -48   # Converte o caractere em um número inteiro
 
-beqz s3, Bit   # Se ainda não leu nenhum caractere, pula para Bit
-mv a0, s5      # Move o valor do número para a0
-li a1, 10     # Define 10 como o multiplicador
-jal mull      # Chama a função mull para multiplicar o valor por 10
-mv s5, a0     # Move o resultado da multiplicação para s5
+LoopLeitura:
 
-Bit:  
-add s5, s5, s2    # Adiciona o valor lido ao número
-addi s3, s3, 1    # Incrementa a contagem de caracteres lidos
-addi s6, s6, 1    # Avança o ponteiro para a próxima posição da string
-j A          # Retorna para A para continuar a leitura dos caracteres
+lbu s2, 0(s6) # Lê o próximo caractere da string
+blt s2, s0, Retorna # Se o caractere lido for menor que '0', pula para Retorna
+bgt s2, s1, Retorna # Se o caractere lido for maior que '9', pula para Retorna
 
-R: 
-mv a0, s5     # Move o valor do número para a0
-lw s2, 24(sp)   # Restaura o
-lw s2, 24(sp)
-lw ra, 0(sp)
-lw s6, 4(sp)
-lw s0, 8(sp)
-lw s1, 12(sp)
-lw s3, 16(sp)
-lw s5, 20(sp)
-addi sp, sp, 28
-ret
+sub s2, s2, s0 # Converte o caractere em um número inteiro
 
+beqz s3, AlteraBit # Se ainda não leu nenhum caractere, pula para Bit
+mv a0, s5 # Move o valor do número para a0
+li a1, 10 # Define 10 como o multiplicador
+jal multi # Chama a função multi para multiplicar o valor por 10
+mv s5, a0 # Move o resultado da multiplicação para s5
+
+
+AlteraBit:
+add s5, s5, s2 # Adiciona o valor lido ao número
+addi s3, s3, 1 # Incrementa a contagem de caracteres lidos
+addi s6, s6, 1 # Avança o ponteiro para a próxima posição da string
+j LoopLeitura # Retorna para LoopLeitura para continuar a leitura dos caracteres
+
+Retorna:
+mv a0, s5 # Move o valor do número para a0
+
+lw ra, 0(sp) # Restaura o registrador ra
+lw s0, 4(sp) # Restaura o registrador s0
+lw s1, 8(sp) # Restaura o registrador s1
+addi sp, sp, 12 # Desaloca espaço na pilha
+ret 
