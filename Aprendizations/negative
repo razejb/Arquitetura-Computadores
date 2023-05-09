@@ -5,9 +5,6 @@ Pretende-se desenvolver uma função que retorne 1 se o número x é negativo e 
 Escreva a função em assembly RISC-V.
 
 negative: 
-
-addi sp, sp, -4   #cria espaço na pilha para armazenar o valor
-sw ra, 0(sp)      #guarda o valor ra na pilha
                   
 slti t0, a0, 1    #testa se o bit mais significativo de a0 é 1
 beqz t0, positive #se for zero, salta para a label 'positive'
@@ -16,8 +13,5 @@ ret               #retorna a função
 
 positive:         #
 li a0, 0          #coloca 0 em a0
-
-lw ra, 0(sp)      #restaura o valor de ra
-addi sp, sp, 4    #desfaz o espaço na pilha
 
 ret
