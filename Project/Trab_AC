@@ -1,4 +1,4 @@
-.globl read_rgb_image
+.globl main
 ##################################################################################
 #	Licenciatura em Engenharia Informática	       
 #	      Arquitetuta de Computadores I            
