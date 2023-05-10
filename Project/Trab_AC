@@ -185,8 +185,77 @@ RET:
 #					                                                   
 ##################################################################################
 indicator: 
+	
+  # Assume que o número do personagem está em a0 e as componentes R, G, B do pixel estão em a1, a2 e a3, respectivamente
+  # Verifica se as componentes correspondem ao personagem
+  # Se sim, retorna 1. Caso contrário, retorna 0.
+  
+  beq a1, personagem_r, .verifica_g
+  li a0, 0 # Se a componente R for diferente, já retorna 0
+  ret
+  
+.verifica_g:
+  beq a2, personagem_g, .verifica_b
+  li a0, 0 # Se a componente G for diferente, já retorna 0
+  ret
+  
+.verifica_b:
+  beq a3, personagem_b, .pertence
+  li a0, 0 # Se a componente B for diferente, já retorna 0
+  ret
+  
+.pertence:
+  li a0, 1 # Pixel pertence ao personagem
+  ret
 
+##################################################################################
+#Função: location	       			 		 
+#Descrição: 		 
+#Argumentos:		       					 			
+#	a0 -            			           
+#Retorna:	       							 
+#					                                                   
+##################################################################################
+location:
 
+	location:
+    # Inicializa as variáveis acumuladoras
+    li t0, 0    # Acumulador de soma de coordenadas X
+    li t1, 0    # Acumulador de soma de coordenadas Y
+    li t2, 0    # Acumulador de número de pixels
+    
+    # Itera sobre o array de pixels
+    loop:
+        # Carrega o próximo pixel
+        lw t3, 0(a1)
+        
+        # Verifica se o pixel pertence ao personagem
+        add t4, zero, a0      # Copia o número do personagem para t4
+        beq t3, t4, belongs   # Se o pixel pertence ao personagem, pula para belongs
+        
+        # Caso contrário, continua a iteração
+        addi a1, a1, 4    # Incrementa o ponteiro do array de pixels
+        addi t2, t2, 1    # Incrementa o acumulador de número de pixels
+        bne t2, a2, loop  # Se ainda não iterou sobre todos os pixels, volta para loop
+        
+        # Caso tenha iterado sobre todos os pixels, calcula o centro de massa
+        divu t0, t0, t2   # Divide a soma de coordenadas X pelo número de pixels
+        divu t1, t1, t2   # Divide a soma de coordenadas Y pelo número de pixels
+        sw t0, 0(a3)      # Armazena a coordenada X do centro de massa
+        sw t1, 0(a4)      # Armazena a coordenada Y do centro de massa
+        jr ra             # Retorna para o caller
+        
+    belongs:
+        # Se o pixel pertence ao personagem, adiciona as coordenadas X e Y à soma acumulada
+        lw t5, 4(a1)    # Carrega a componente X do pixel
+        lw t6, 8(a1)    # Carrega a componente Y do pixel
+        add t0, t0, t5  # Adiciona a componente X à soma acumulada
+        add t1, t1, t6  # Adiciona a componente Y à soma acumulada
+        
+        # Continua a iteração
+        addi a1, a1, 12  # Incrementa o ponteiro do array de pixels
+        addi t2, t2, 1   # Incrementa o acumulador de número de pixels
+        bne t2, a2, loop # Se ainda não iterou sobre todos os pixels, volta para loop
 		
 
 	
