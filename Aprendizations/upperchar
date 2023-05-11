@@ -7,8 +7,6 @@ O protótipo da função em C seria:
 Escreva a função em assembly RISC-V. A tabela ASCII para as letras maiúsculas e minúsculas encontra-se na tabela seguinte.
 
 upperchar:
-	addi sp, sp, -4     	# reserva espaço na pilha para salvar o registrador ra
-	sw ra, 0(sp)        	# salva o registrador ra na pilha
 
 	li t1, 97           	# carácter 'a' em ASCII
 	li t2, 122          	#carácter 'z' em ASCII
@@ -25,9 +23,7 @@ upperchar:
 	addi a0, a0, -32    	# converte a letra minúscula em maiúscula, alterando o valor em t0
 
 exit:
-	lw ra, 0(sp)        	# restaura o registrador ra
-	addi sp, sp, 4      	# libera o espaço na pilha
-	ret                 	# retorna para o chamador
+	ret                
 	               	    	
 	
 	
