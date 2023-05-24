@@ -1,1 +1,330 @@
-chupa-mos
+.globl main
+##################################################################################
+#	Licenciatura em Engenharia Informática	       
+#	      Arquitetuta de Computadores I            
+#		      2022/2023		       
+#		Trabalho Realizado por:              
+#		 João Santos nº 51966	       
+#		 Diogo Matos nº 54466                
+##################################################################################
+.data
+	imageRGB: .asciz "/home/razejb/MEGAsync/starwars.rgb"
+	imageFinalRGB: .asciz "/home/razejb/MEGAsync/result.rgb"
+
+	# 320*180*3 =  172800
+	# 320*180 = 57600
+	inicialBuffer: .space 172800
+	resultBuffer: .space 57600
+	
+	input: .space 100 #espaço para armazenar a entrada do usuário
+	prompt: .asciz "Digite o número de personagem que pretende, 1(Yoda)|2(Darth Maul)|3(Boba Fett)\n\n->"
+
+.text
+
+################################################################################
+#Funcao: Main
+#Descricao: faz a chamada das funcoes
+#Argumentos:
+#  Sem argumentos
+#Retorna:
+#  Sem Valor de retorno
+################################################################################
+main:
+	la a0, prompt
+	li a7, 4
+	ecall
+	
+	la a0, input
+	li a1, 100	#numero de bytes para ler
+	li a7, 8		#System call numero para ler "scanf"
+	mv a1, a0
+	ecall 	#?
+	
+	la a0, imageRGB
+	jal read_rgb_image
+	
+	la a0, inicialBuffer
+	
+	jal location	#location(a0, a1)
+	
+	jal write_rgb_image
+	
+##################################################################################
+#Função: read_rgb_image	       			 		 
+#Descrição:Lê um ficheiro com uma imagem no formato RGB para um array em memória.
+#Argumentos:		       					 			
+#	a0 - String com o nome do ficheiro            			 
+#Retorna:	       							 
+#	a2 - Endereço de um buffer onde a imagem deverá ser escrita                                                    
+##################################################################################
+read_rgb_image:
+	#Abre o ficheiro
+	li a7, 1024
+	la a0, imageRGB
+	li a1, 1
+	ecall
+	mv s6, a0
+	
+	#Lê o ficheiro
+	li a7, 63
+	la a1, inicialBuffer
+	li a2, 172800
+	ecall
+	
+	#Fecha o ficheiro
+	li a7, 57
+	mv a0,s6
+	ecall
+	ret
+	
+##################################################################################
+#Função: write_rgb_image	       			 		 
+#Descrição: Cria um ficheiro novo com uma imagem no formato RGB.		 
+#Argumentos:		       					 			
+#	a0 - nome do ficheiro					 
+#	a1 - buffer da imagem					 
+# 	a2 - comprimento do buffer           			           
+#Retorna:	       							 
+#	Não retorna nenhum valor				                                                   
+##################################################################################
+write_rgb_image:
+	#Abre o ficheiro
+	li a7, 1024
+	la a0, imageFinalRGB
+	li a1, 1
+	ecall
+	mv s6, a0
+	
+	#Escreve o ficheiro
+	li a7, 64
+	la a1, resultBuffer
+	li a2, 57600
+	ecall
+	
+	#Fecha o ficheiro
+	li a7, 57
+	mv a0, s6
+	ecall
+	ret
+	
+###################################################################################
+#Função: hue	       			 		 	 
+#Descrição: Calcula a componente Hue a partir das componentes R,G e B como pixel.		 
+#Argumentos:		       					 			
+#	a0 - componente Red
+#	a1 - componente Green
+#	a2 - componente Blue        			           
+#Retorna:	       							 
+#	Retorna valor do Hue de um pixel				                                                   
+###################################################################################
+hue:
+	li t0, 60
+	
+	#Verificação dos valores
+	bgt a0,a1, L1		#R>G>=B	Laranja
+	bge a1, a0, L2		#G>=R>B	Verde-amarelado
+	bgt a1, a2, L3		#G>B>=R	Verde Primavera
+	bge a2, a1, L4		#B>=G>R	Azure
+	bgt a2, a0, L5		#B>R>=G	Violeta
+	bge a0, a2, L6		#R>=B>G	Rosa
+	
+	
+	
+	L1:
+		bge a1,a2, Calc1
+		
+		Calc1:
+			sub t1,a1,a2	#G-B
+			sub t2,a0, a2	#R-B
+			div t1, t1, t2	#G-B/G-B	
+			mul t1, t0, t1      #60*(G-B/R-B)
+	j RET
+			
+	
+	L2:
+		bgt a0,a2, Calc2
+		
+		Calc2: 
+			sub t1, a0, a2	#R-B
+			sub t2,a1,a2	#G-B
+			div t1, t1, t2	#R-B/G-B
+			slli t3, t0, 4	#2*60
+			mul t1, t0, t1	#60*(R-B/G-B)
+			sub t1, t3, t1	#120-60*(R-B/G-B)
+		
+	L3:
+		bge a2, a1, Calc3
+		
+		Calc3:
+			sub t1, a2, a0	#B-R
+			sub t2, a1, a0	#G-R
+			div t1, t1, t2	#B-R/G-R
+			slli t3, t0, 4	#2*60
+			mul t1, t0, t1	#60*(B-R/G-R)
+			add t1, t3, t1	#120+60*(B-R/G-R)
+	j RET
+			
+	L4:
+		bgt a1, a0, Calc4
+		
+		Calc4:
+			sub t1, a1, a0	#G-R
+			sub t2, a2, a0	#B-R
+			div t1, t1, t2	#G-R/B-R
+			mul t1, t0, t1	#60*(G-R/B-R)
+			slli t3, t0, 8	#4*60
+			sub t1, t3, t1	#240-60*(G-R/B-R)
+	j RET
+			
+	L5:
+		bge a0, a1, Calc5
+		
+		Calc5:
+			sub t1, a0, a1	#R-G
+			sub t2, a2, a1	#B-G
+			div t1, t1, t2	#R-G/B-G
+			mul t1, t0, t1	#60*(R-G/B-G)
+			slli t3, t0, 8	#4*60
+			add t1, t3, t1	#240+60*(R-G/B-G)
+	j RET
+			
+			
+	L6:
+		bgt a2,a1, Calc6
+		
+		Calc6:
+			sub t1, a2, a1	#B-G
+			sub t2, a0, a1	#R-G
+			div t1, t1, t2	#B-G/R-G
+			mul t1, t0, t1	#60*(B-G/R-G)
+			addi t0,t0,300	#60+300
+			sub t1, t0,t1	#360-60*(B-G/R-G)
+			
+	
+	j RET
+	
+RET:
+	mv a0, t1	
+	ret
+	
+##################################################################################
+#Função: Indicator	 		 
+#Descrição: dado um personagem (e.g. 1,2,3) e um pixel com componentes R, G, B,
+#indica se esse pixel pertence ou não à personagem
+#Argumentos:		       					 			
+#	a0 - componente Red
+#	a1 - componente Green
+#	a2 - componente Blue
+#	a3 - personagem pretendida     			           
+#Retorna:	       							 
+#	Retorna 1 se pertencer à personagem pretendida e 0 se não pertencer					                                                   
+##################################################################################
+indicator:
+	addi sp, sp, -4
+	sw ra, 0(sp)
+	
+	li t1, 1	#Yoda
+	li t2, 2	#Maul
+	li t3, 3	#Boba
+	mv t0, a3
+	jal hue
+	
+	beq t0, t1, Yoda
+	beq t0, t2, Maul
+	beq t0, t3, Boba
+	
+Yoda:
+	li t4, 40
+	li t5, 80
+	blt a0, t4, RET2
+	bgt a0, t5, RET2
+	li a0, 1
+	j FINAL
+
+Maul:
+	li t4, 1
+	li t5, 15
+	blt a0, t4, RET2
+	bgt a0, t5, RET2
+	li a0, 1
+	j FINAL
+	
+Boba:
+	li t4, 160
+	li t5, 180
+	blt a0, t4, RET2
+	bgt a0, t5, RET2
+	li a0, 1
+	j FINAL
+RET2:
+	li a0, 0
+FINAL:	
+	lw ra, 0(sp)
+	addi sp, sp, 4
+	ret
+
+##################################################################################
+#Função: Location	 
+#Descrição: calcula o “centro de massa” para um certo personagem p (a1)
+#Argumentos:
+#	a0 - buffer com a imagem RGB       					 			
+#	a1 - personagem pretendida	           
+#Retorna:	       							 
+#	Retorna o valor do centro de massa para certo personagem 					                                                   
+##################################################################################
+location:
+	addi sp, sp, -28
+	sw s0, 0(sp)
+	sw s1, 4(sp)
+	sw s2, 8(sp)
+	sw s3, 12(sp)
+	sw s4, 16(sp)
+	sw s5, 20(sp)
+	sw ra, 24(sp)
+	
+	mv s0, a0
+	li t0, 1
+	li s1, 0	#contador N
+	li s2, 0	#x
+	li s3, 0	#y
+	li s4, 0	#Somador cx
+	li s5, 0	#Somador cy
+	li t0, 960	#320*3
+	li t1, 180	
+	j WHILE_Y
+
+	WHILE_Y:
+			j WHILE_X
+			li s2,0	#x=0
+			addi s3,s3,1	#y++
+			blt s3,t1, WHILE_Y	#y<180
+			j RET3
+		WHILE_X:
+			lbu a0, 0(s0)
+			lbu a1, 1(s0)
+			lbu a2, 2(s0)
+			jal indicator
+			add s1, s1, a0	#N+=indicator()
+			beq a0, t0, INCRE
+			addi s0, s0, 3
+			addi s2, s2, 1	#x++
+			blt s2, t0, WHILE_X	#x<960
+			j WHILE_Y
+			
+		INCRE:	
+			add s4,s4,s2	#cx+=x
+			add s5,s5,s3 	#cy+=y
+RET3:
+	div s4, s4, s1	#Cx=Somador Cx/N
+	div s5, s5, s1	#Cy=Somador Cy/N
+	mv a0, s4
+	mv a1, s5
+	lw s0, 0(sp)
+	lw s1, 4(sp)
+	lw s2, 8(sp)
+	lw s3, 12(sp)
+	lw s4, 16(sp)
+	lw s5, 20(sp)
+	lw ra, 24(sp)
+	addi sp, sp, 28
+	ret
