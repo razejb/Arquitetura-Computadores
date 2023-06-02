@@ -9,11 +9,11 @@ int abs_diff(int x, int y)
 }
 
 abs_diff:
-bgt a0, a1, RET
+bgt a0, a1, R
 sub a0, a1, a0
 ret
 
-RET:
+R:
 sub a0, a0, a1
 ret
  
